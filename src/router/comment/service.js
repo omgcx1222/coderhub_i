@@ -4,9 +4,12 @@ class CommentService {
   // 发表评论
   async pub(uId, content, mId) {
     const statement = "INSERT INTO `comment` (user_id, content, moment_id) VALUES (?, ?, ?)"
-    const result = await connection.execute(statement, [uId, content, mId])
-
-    return result[0]
+    try {
+      await connection.execute(statement, [uId, content, mId])
+      return "发表评论成功"
+    } catch (error) {
+      return "发表评论失败"
+    }
   }
 
   // 回复评论
@@ -20,9 +23,12 @@ class CommentService {
   // 删除回复
   async remove(id) {
     const statement = "DELETE FROM comment WHERE id = ?"
-    const result = await connection.execute(statement, [id])
-
-    return result[0]
+    try {
+      await connection.execute(statement, [id])
+      return "删除成功"
+    } catch (error) {
+      return "删除失败" + error.message
+    }
   }
 
   // 获取动态的评论列表
@@ -37,9 +43,12 @@ class CommentService {
       ORDER BY ${order} DESC
       LIMIT ?, ?
     `
-    const result = await connection.execute(statement, [momentId, offset, limit])
-
-    return result[0]
+    try {
+      const [result] = await connection.execute(statement, [momentId, offset, limit])
+      return result
+    } catch (error) {
+      return error.message
+    }
   }
 }
 

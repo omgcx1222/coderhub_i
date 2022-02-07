@@ -12,7 +12,7 @@ class UserMiddleware {
     const { username, password, nickname } = ctx.request.body
 
     // 判断账号密码是否为空
-    if(!username || !password) {
+    if(!username || !password || !nickname) {
       const err = new Error(errorType.USERNAME_PASSWORD_IS_NULL)
       return ctx.app.emit('error', err, ctx)
     }
@@ -54,10 +54,10 @@ class UserMiddleware {
     const user = ctx.request.body
 
     // 数据库操作
-    const result = await service.create(user)
+    await service.create(user)
 
     // 返回结果
-    ctx.body = result
+    ctx.body = "注册成功"
   }
 
   // 读取头像

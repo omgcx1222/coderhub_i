@@ -1,5 +1,5 @@
 const connection = require('../../app/database')
-const { APP_URL } = require('../../app/config')
+const { APP_URL, APP_PORT } = require('../../app/config')
 
 class MomentService {
   // 发表动态
@@ -32,20 +32,25 @@ class MomentService {
         (SELECT COUNT(*) FROM moment_agree mg WHERE mg.moment_id = m.id and mg.is_agree = 1) agree,
         (SELECT COUNT(*) FROM moment_agree mg WHERE mg.moment_id = m.id and mg.is_agree = 0) notAgree,
         IF(COUNT(ml.label_id),JSON_ARRAYAGG(JSON_OBJECT('id', ml.label_id, 'name', (SELECT name FROM label WHERE id = ml.label_id))), NULL) labels,
-        (SELECT JSON_ARRAYAGG(CONCAT('${APP_URL}', '/moment/picture/', p.filename)) FROM picture p WHERE p.moment_id = m.id) pictures
+        (SELECT JSON_ARRAYAGG(CONCAT('${APP_URL}:${APP_PORT}', '/moment/picture/', p.filename)) FROM picture p WHERE p.moment_id = m.id) pictures
       FROM moment m LEFT JOIN users u ON m.user_id = u.id
       LEFT JOIN moment_label ml ON ml.moment_id = m.id
       WHERE m.id = ?
     `
-    const [result] = await connection.execute(statement, [id])
-    if(result[0].momentId == null) {
-      return "该动态不存在~"
+    try {
+      const [result] = await connection.execute(statement, [id])
+      if(result[0].momentId == null) {
+        return "该动态不存在~"
+      }
+      return result[0]
+    } catch (error) {
+      return error
     }
-    return result[0]
   }
 
   // 获取动态列表
   async list(order, offset, limit) {
+    console.log(order, offset, limit);
     const statement = `
       SELECT m.id momentId, m.content content, m.createTime createTime, m.updateTime updateTime,
         JSON_OBJECT('id', u.id, 'nickname', u.nickname, 'avatarUrl', u.avatar_url) user,
@@ -58,15 +63,19 @@ class MomentService {
       LIMIT ?, ?
     `
     
-    const result = await connection.execute(statement, [offset, limit])
-    return result[0]
+    try {
+      const result = await connection.execute(statement, [offset, limit])
+      return result[0]
+    } catch (error) {
+      return error
+    }
   }
 
   // 修改动态内容
   async update(id, content) {
     // 修改内容
     const statement = "UPDATE moment SET content = ? WHERE id = ?"
-    const result = await connection.execute(statement, [content, id])
+    await connection.execute(statement, [content, id])
 
     return "修改内容成功~"
   }
@@ -80,17 +89,19 @@ class MomentService {
   // 删除动态
   async remove(id) {
     const statement = "DELETE FROM moment WHERE id = ?"
-    const result = await connection.execute(statement, [id])
-
-    return result[0]
+    try {
+      const [result] = await connection.execute(statement, [id])
+      return "删除动态成功~"
+    } catch (error) {
+      return "删除动态失败" + error.message
+    }
   }
 
   // 获取动态配图信息
   async picture(filename) {
     const statement = "SELECT * FROM picture WHERE filename = ?"
-    const result = await connection.execute(statement, [filename])
-
-    return result[0]
+    const [result] = await connection.execute(statement, [filename])
+    return result
   }
 }
 

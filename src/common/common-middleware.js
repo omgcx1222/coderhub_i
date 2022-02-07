@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken')
 
 const { PUBLIC_KEY } = require('../app/config')
-const { TOKEN_NOT_OK, NOT_OPERATION_PERMISSION } = require('../util/error-type')
+const { TOKEN_NOT_OK, NOT_OPERATION_PERMISSION, MOMENT_EXIST, COMMENT_EXIST, PARAMS_ERROR } = require('../util/error-type')
 
-const { verifyService } = require('./common-service')
+const { permissionExist, momentExist, macExist } = require('./common-service')
 
 class CommonMiddleware {
   // 验证token
@@ -31,7 +31,7 @@ class CommonMiddleware {
     return async (ctx, next) =>{
       const typeId = ctx.params[tableName + "Id"]
       const { id } = ctx.user
-      const result = await verifyService(tableName, typeId, id)
+      const result = await permissionExist(tableName, typeId, id)
       
       if(!result.length) {
         const error = new Error(NOT_OPERATION_PERMISSION)
@@ -40,6 +40,33 @@ class CommonMiddleware {
   
       await next()
     }
+  }
+
+  // 检查动态是否存在
+  async verifyMoment(ctx, next) {
+    const { momentId } = ctx.request.body
+    if(!momentId) return ctx.app.emit('error', new Error(PARAMS_ERROR), ctx)
+    
+    const result = await momentExist("moment", momentId)
+    if(!result.length) {
+      return ctx.app.emit('error', new Error(MOMENT_EXIST), ctx)
+    }
+    
+    await next()
+  }
+
+  // 检查动态和评论是否同时存在
+  async verifyMomentAndComment(ctx, next) {
+    const { commentId } = ctx.params
+    const { momentId } = ctx.request.body
+    if(!commentId || !momentId) return ctx.app.emit('error', new Error(PARAMS_ERROR), ctx)
+
+    const result = await macExist(commentId, momentId)
+    if(!result.length) {
+      return ctx.app.emit('error', new Error(COMMENT_EXIST), ctx)
+    }
+
+    await next()
   }
 }
 

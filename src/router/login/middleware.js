@@ -10,6 +10,7 @@ class LoginMiddleware {
   async verifyLogin(ctx, next) {
     // 获取登录信息
     const { username, password } = ctx.request.body
+    if(!username || !password) return ctx.app.emit('error', new Error(errorType.PARAMS_ERROR), ctx)
     
     // 判断账号密码是否为空
     if(!username || !password) {
