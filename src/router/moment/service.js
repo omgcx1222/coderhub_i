@@ -51,7 +51,6 @@ class MomentService {
 
   // 获取动态列表
   async list(order, offset, limit) {
-    console.log(order, offset, limit);
     const statement = `
       SELECT m.id momentId, m.content content, m.createTime createTime, m.updateTime updateTime,
         JSON_OBJECT('id', u.id, 'nickname', u.nickname, 'avatarUrl', u.avatar_url) author,
