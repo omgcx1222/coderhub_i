@@ -28,7 +28,7 @@ class MomentService {
   async detail(id) {
     const statement = `
       SELECT m.id momentId, m.content content, m.createTime createTime, m.updateTime updateTime,
-        IF(COUNT(u.id),JSON_OBJECT('id', u.id, 'nickname', u.nickname, 'avatarUrl', u.avatar_url), null) user,
+        IF(COUNT(u.id),JSON_OBJECT('id', u.id, 'nickname', u.nickname, 'avatarUrl', u.avatar_url), null) author,
         (SELECT COUNT(*) FROM moment_agree mg WHERE mg.moment_id = m.id and mg.is_agree = 1) agree,
         (SELECT COUNT(*) FROM moment_agree mg WHERE mg.moment_id = m.id and mg.is_agree = 0) notAgree,
         IF(COUNT(ml.label_id),JSON_ARRAYAGG(JSON_OBJECT('id', ml.label_id, 'name', (SELECT name FROM label WHERE id = ml.label_id))), NULL) labels,
@@ -36,6 +36,7 @@ class MomentService {
       FROM moment m LEFT JOIN users u ON m.user_id = u.id
       LEFT JOIN moment_label ml ON ml.moment_id = m.id
       WHERE m.id = ?
+      GROUP BY m.id
     `
     try {
       const [result] = await connection.execute(statement, [id])
@@ -53,7 +54,7 @@ class MomentService {
     console.log(order, offset, limit);
     const statement = `
       SELECT m.id momentId, m.content content, m.createTime createTime, m.updateTime updateTime,
-        JSON_OBJECT('id', u.id, 'nickname', u.nickname, 'avatarUrl', u.avatar_url) user,
+        JSON_OBJECT('id', u.id, 'nickname', u.nickname, 'avatarUrl', u.avatar_url) author,
         (SELECT COUNT(*) FROM comment c WHERE m.id = c.moment_id) commentCount,
         (SELECT COUNT(*) FROM moment_agree mg WHERE mg.moment_id = m.id and mg.is_agree = 1) agree,
         (SELECT COUNT(*) FROM moment_agree mg WHERE mg.moment_id = m.id and mg.is_agree = 0) notAgree

@@ -13,6 +13,12 @@ const app = new Koa()
 
 app.use(bodyParser())
 
+// 解决跨域问题
+app.use(async (ctx, next) =>{
+  // 修改响应头
+  ctx.response.set('Access-Control-Allow-Origin', '*');
+  await next()
+})
 
 fs.readdirSync(path.join(__dirname, '../router')).forEach(file =>{
   const router = require(`../router/${file}`)
