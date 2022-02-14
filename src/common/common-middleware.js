@@ -47,7 +47,7 @@ class CommonMiddleware {
     const { momentId } = ctx.request.body
     if(!momentId) return ctx.app.emit('error', new Error(PARAMS_ERROR), ctx)
     
-    const result = await momentExist("moment", momentId)
+    const result = await momentExist(momentId)
     if(!result.length) {
       return ctx.app.emit('error', new Error(MOMENT_EXIST), ctx)
     }

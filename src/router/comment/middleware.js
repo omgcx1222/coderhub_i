@@ -1,5 +1,6 @@
 const { pub, reply, remove, list } = require('./service')
 const { PARAMS_ERROR } = require('../../util/error-type')
+const { agreeExist, agree, deleteAgree } = require('../../common/common-service')
 
 class CommentMiddleware {
   // 发表评论
@@ -48,6 +49,24 @@ class CommentMiddleware {
     const result = await list(momentId, order, offset, limit)
 
     ctx.body = result
+  }
+
+  // 点赞
+  async goAgree(ctx, next) {
+    const { id } = ctx.user
+    const { commentId } = ctx.params
+    try {
+      const result = await agreeExist(id, commentId, "comment")
+      if(!result.length) {
+        await agree(id, commentId, "comment")
+        ctx.body = "点赞成功"
+      }else {
+        await deleteAgree(id, commentId, "comment")
+        ctx.body = "取消点赞"
+      }
+    } catch (error) {
+      ctx.body = "点赞失败"
+    }
   }
 }
 

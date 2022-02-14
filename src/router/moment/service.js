@@ -29,10 +29,9 @@ class MomentService {
     const statement = `
       SELECT m.id momentId, m.content content, m.createTime createTime, m.updateTime updateTime,
         IF(COUNT(u.id),JSON_OBJECT('id', u.id, 'nickname', u.nickname, 'avatarUrl', u.avatar_url), null) author,
-        (SELECT COUNT(*) FROM moment_agree mg WHERE mg.moment_id = m.id and mg.is_agree = 1) agree,
-        (SELECT COUNT(*) FROM moment_agree mg WHERE mg.moment_id = m.id and mg.is_agree = 0) notAgree,
+        (SELECT COUNT(*) FROM moment_agree mg WHERE mg.moment_id = m.id) agree,
         IF(COUNT(ml.label_id),JSON_ARRAYAGG(JSON_OBJECT('id', ml.label_id, 'name', (SELECT name FROM label WHERE id = ml.label_id))), NULL) labels,
-        (SELECT JSON_ARRAYAGG(CONCAT('${APP_URL}:${APP_PORT}', '/moment/picture/', p.filename)) FROM picture p WHERE p.moment_id = m.id) pictures
+        (SELECT JSON_ARRAYAGG(CONCAT('${APP_URL}:${APP_PORT}', '/moment/picture/', p.filename)) FROM picture p WHERE p.moment_id = m.id) images
       FROM moment m LEFT JOIN users u ON m.user_id = u.id
       LEFT JOIN moment_label ml ON ml.moment_id = m.id
       WHERE m.id = ?
@@ -54,9 +53,9 @@ class MomentService {
     const statement = `
       SELECT m.id momentId, m.content content, m.createTime createTime, m.updateTime updateTime,
         JSON_OBJECT('id', u.id, 'nickname', u.nickname, 'avatarUrl', u.avatar_url) author,
+        (SELECT JSON_ARRAYAGG(CONCAT('${APP_URL}:${APP_PORT}', '/moment/picture/', p.filename)) FROM picture p WHERE p.moment_id = m.id) images,
         (SELECT COUNT(*) FROM comment c WHERE m.id = c.moment_id) commentCount,
-        (SELECT COUNT(*) FROM moment_agree mg WHERE mg.moment_id = m.id and mg.is_agree = 1) agree,
-        (SELECT COUNT(*) FROM moment_agree mg WHERE mg.moment_id = m.id and mg.is_agree = 0) notAgree
+        (SELECT COUNT(*) FROM moment_agree mg WHERE mg.moment_id = m.id) agree
       FROM moment m LEFT JOIN users u
       ON m.user_id = u.id
       ORDER BY ${order} DESC

@@ -4,6 +4,7 @@ const path = require('path')
 const { insertMoment, addLAbel, delLabel, detail, list, update, remove, picture } = require('./service')
 const { CONTENT, PARAMS_ERROR } = require('../../util/error-type')
 const { PICTURE_PATH } = require('../../util/file-path')
+const { agreeExist, agree, deleteAgree } = require('../../common/common-service')
 
 class MomentMiddleware {
   // 发表动态
@@ -90,6 +91,24 @@ class MomentMiddleware {
       ctx.body = fs.createReadStream(path.join(PICTURE_PATH, filename))
     } catch (error) {
       ctx.body = error
+    }
+  }
+
+  // 动态点赞或点踩
+  async goAgree(ctx, next) {
+    const { id } = ctx.user
+    const { momentId } = ctx.params
+    try {
+      const result = await agreeExist(id, momentId, "moment")
+      if(!result.length) {
+        await agree(id, momentId, "moment")
+        ctx.body = "点赞成功"
+      }else {
+        await deleteAgree(id, momentId, "moment")
+        ctx.body = "取消点赞"
+      }
+    } catch (error) {
+      ctx.body = "点赞失败"
     }
   }
 }

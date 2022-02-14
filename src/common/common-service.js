@@ -45,6 +45,28 @@ class CommonService {
       return []
     }
   }
+
+  // 检查点赞是否存在
+  async agreeExist(userId, id, type) {
+    const statement = `SELECT * FROM ${type}_agree WHERE user_id = ? AND ${type}_id = ?`
+    const [result] = await connection.execute(statement, [userId, id])
+    return result
+  }
+
+  // 点赞
+  async agree(userId, id, type) {
+    const statement = `INSERT INTO ${type}_agree (user_id, ${type}_id) VALUES (?, ?)`
+    const [result] = await connection.execute(statement, [userId, id])
+    return result
+  }
+
+  // 删除点赞
+  async deleteAgree(userId, id, type) {
+    const statement = `DELETE FROM ${type}_agree WHERE user_id = ? AND ${type}_id = ?`
+    const [result] = await connection.execute(statement, [userId, id])
+    
+    return result
+  }
 }
 
 module.exports = new CommonService()

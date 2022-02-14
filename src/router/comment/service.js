@@ -36,8 +36,7 @@ class CommentService {
     const statement = `
       SELECT c.id, c.content, c.createTime, c.moment_id momentId, c.comment_id commentId,
         JSON_OBJECT('id', u.id, 'nickname', u.nickname, 'avatarUrl', u.avatar_url) user,
-        (SELECT COUNT(*) FROM comment_agree cg WHERE cg.comment_id = c.id and cg.is_agree = 1) agree,
-        (SELECT COUNT(*) FROM comment_agree cg WHERE cg.comment_id = c.id and cg.is_agree = 0) notAgree
+        (SELECT COUNT(*) FROM comment_agree cg WHERE cg.comment_id = c.id) agree
       FROM comment c LEFT JOIN users u ON c.user_id = u.id
       WHERE moment_id = ?
       ORDER BY ${order} DESC

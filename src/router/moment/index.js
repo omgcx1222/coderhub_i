@@ -1,13 +1,14 @@
 const Router = require('koa-router')
 
-const { verifyToken, verifyPermission } = require('../../common/common-middleware')
+const { verifyToken, verifyPermission, verifyAgree } = require('../../common/common-middleware')
 const { 
   createMoment, 
   momentDetail, 
   momentList, 
   updateMoment,
   removeMoment,
-  getPicture
+  getPicture,
+  goAgree
 } = require('./middleware')
 
 const commentRouter = new Router({prefix: '/moment'})
@@ -18,5 +19,6 @@ commentRouter.get('/', momentList) // 动态列表
 commentRouter.patch('/:momentId', verifyToken, verifyPermission("moment"), updateMoment) // 修改动态
 commentRouter.delete('/:momentId', verifyToken, verifyPermission("moment"), removeMoment) // 删除动态
 commentRouter.get('/picture/:filename', getPicture)  // 读取图片
+commentRouter.post('/:momentId/like', verifyToken, goAgree)  // 点赞
 
 module.exports = commentRouter
