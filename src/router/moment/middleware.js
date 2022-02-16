@@ -86,7 +86,9 @@ class MomentMiddleware {
   async getPicture(ctx, next) {
     const { filename } = ctx.params
     try {
-      const result = await picture(filename)
+      // 图片末尾有 -y 则表示为压缩后的图片，数据库中只保存了压缩前的图片信息
+      const zfilename = filename.replace('-y', '')
+      const result = await picture(zfilename)
       ctx.response.set('content-type', result[0].mimetype)
       ctx.body = fs.createReadStream(path.join(PICTURE_PATH, filename))
     } catch (error) {

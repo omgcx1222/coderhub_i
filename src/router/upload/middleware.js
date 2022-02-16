@@ -1,6 +1,8 @@
 const fs = require('fs')
 const path = require('path')
 
+const jimp = require('jimp')  // 图片压缩
+
 const multer = require('koa-multer')
 
 const {
@@ -12,26 +14,83 @@ const {
   uploadPictures
 } = require('./service')
 const { AVATAR_PATH, PICTURE_PATH } = require('../../util/file-path')
-const { PARAMS_ERROR } = require('../../util/error-type')
+// const { PARAMS_ERROR } = require('../../util/error-type')
 const { APP_URL, APP_PORT } = require('../../app/config')
 
-const saveAvatarMulter = multer({ dest: AVATAR_PATH })
-const savePicturesMulter = multer({ dest: PICTURE_PATH })
+const saveAvatarMulter = multer({ 
+  dest: AVATAR_PATH,
+  limits: {
+    fileSize: 10240 * 1000,
+    files: 1
+  },
+  fileFilter: function (req, file, cb) {
+    if(!file.mimetype.indexOf('image')) {
+      cb(null, true)
+    }else {
+      cb(new Error("请上传图片"), false)
+    }
+  }
+})
+
+
+const savePicturesMulter = multer({ 
+  dest: PICTURE_PATH,
+  limits: {
+    fileSize: 10240 * 1000,
+    files: 9
+  },
+  fileFilter: function (req, file, cb) {
+    if(!file.mimetype.indexOf('image')) {
+      cb(null, true)
+    }else {
+      cb(new Error("请上传图片"), false)
+    }
+  }
+})
+
 
 class UploadMiddleware {
-  // 保存头像到服务器
-  saveAvatar =  saveAvatarMulter.single('avatar')
+  // 保存头像到服务器(单个文件)
+  async saveAvatar(ctx, next) {
+    await saveAvatarMulter.single('avatar')(ctx, next).catch(err =>{
+      ctx.body = err.message
+    })
+  }
 
-  // 保存配图到服务器
-  savePictures = savePicturesMulter.array('picture')
+  // 保存配图到服务器(多个文件)
+  async savePictures(ctx, next) {
+    await savePicturesMulter.array('picture')(ctx, next).catch(err =>{
+      ctx.body = err.message
+    })
+  }
+
+  // 压缩单个图片
+  async resizeFile(ctx, next) {
+    const file = ctx.req.file
+    jimp.read(file.path).then(res =>{
+      // 直接覆盖
+      res.resize(300, 300).write(`${file.path}`)
+    })
+    await next()
+  }
+
+  // 压缩多个图片
+  async resizeFiles(ctx, next) {
+    for(let file of ctx.req.files) {
+      jimp.read(file.path).then(res =>{
+        res.resize(300, jimp.AUTO).write(`${file.path}-y`)
+      })
+    }
+    await next()
+  }
 
   // 处理头像信息
   async handleAvatar(ctx, next) {
     const { id } = ctx.user
 
-    if(!ctx.req.file) return ctx.app.emit('error', new Error(PARAMS_ERROR), ctx)
+    // if(!ctx.req.file) return ctx.app.emit('error', new Error(PARAMS_ERROR), ctx)
     const { filename, mimetype, size } = ctx.req.file
-    
+
     try {
       // 获取原头像信息
       const result = await getInfo("avatar", "user_id", id)
@@ -42,9 +101,7 @@ class UploadMiddleware {
   
         // 服务器删除原头像
         fs.unlink(path.join(AVATAR_PATH, `/${result[0].filename}`), error => {
-          if(error) {
-            console.log("用户头像删除失败", error);
-          }
+          if(error) console.log("用户头像删除失败", error);
         })
       }else {
         // 新建头像
@@ -63,7 +120,7 @@ class UploadMiddleware {
   async handlePictures(ctx, next) {
     const { id } = ctx.user
 
-    if(!ctx.req.files || !ctx.params) return ctx.app.emit('error', new Error(PARAMS_ERROR), ctx)
+    // if(!ctx.req.files || !ctx.params) return ctx.app.emit('error', new Error(PARAMS_ERROR), ctx)
     const files = ctx.req.files
     const { momentId } = ctx.params
 
@@ -72,15 +129,16 @@ class UploadMiddleware {
       const result = await getInfo("picture", "moment_id", momentId)
 
       if(result.length) {
-        // 清除所有原动态配图
+        // 数据库清除所有原动态配图信息
         await remove(momentId)
 
         // 服务器删除原配图
         for(let file of result) {
           fs.unlink(path.join(PICTURE_PATH, `/${file.filename}`), error => {
-            if(error) {
-              console.log("配图删除失败", error);
-            }
+            if(error) console.log("配图删除失败", error);
+          })
+          fs.unlink(path.join(PICTURE_PATH, `/${file.filename}-y`), error => {
+            if(error) console.log("-y配图删除失败", error);
           })
         }
       }
@@ -96,6 +154,7 @@ class UploadMiddleware {
       ctx.body = error
     }
   }
+
 }
 
 module.exports = new UploadMiddleware()

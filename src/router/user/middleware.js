@@ -62,7 +62,6 @@ class UserMiddleware {
 
   // 读取头像
   async getAvatar(ctx, next) {
-    console.log("111");
     const { userId } = ctx.params
     const result = await service.avatar(userId)
 

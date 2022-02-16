@@ -36,8 +36,6 @@ class UploadService {
     return result
   }
 
-  
-
   // 上传配图信息
   async uploadPictures(userId, filename, mimetype, size, momentId) {
     try {
