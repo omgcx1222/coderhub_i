@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 
-const { insertMoment, addLAbel, delLabel, detail, list, update, remove, picture } = require('./service')
+const { insertMoment, detail, list, update, remove, picture } = require('./service')
 const { CONTENT, PARAMS_ERROR } = require('../../util/error-type')
 const { PICTURE_PATH } = require('../../util/file-path')
 const { agreeExist, agree, deleteAgree } = require('../../common/common-service')
@@ -10,8 +10,8 @@ class MomentMiddleware {
   // 发表动态
   async createMoment(ctx, next) {
     const id = ctx.user.id
-    const { content, labels } = ctx.request.body
-    if(!content || !labels) return ctx.app.emit('error', new Error(PARAMS_ERROR), ctx)
+    const { content, label } = ctx.request.body
+    if(!content || !label) return ctx.app.emit('error', new Error(PARAMS_ERROR), ctx)
 
     // 校验content长度
     if(content.length > 1000) {
@@ -20,12 +20,10 @@ class MomentMiddleware {
     }
 
     try {
-      const result = await insertMoment(id, content)
-      const { insertId } = result // 获取发表的动态的id
-      await addLAbel(insertId, labels)
-      ctx.body = "发表动态并添加标签成功~"
+      await insertMoment(id, content, label)
+      ctx.body = "发表动态成功~"
     } catch (error) {
-      ctx.body = error
+      ctx.body = "发表动态失败，标签id不存在：" + error.message
     }
   }
 
@@ -38,9 +36,9 @@ class MomentMiddleware {
 
   // 获取动态列表
   async momentList(ctx, next) {
-    let { order='0', offset='0', limit='10' } = ctx.query
+    let { label, order='0', offset='0', limit='10' } = ctx.query
 
-    // （默认根据修改时间进行排序）
+    // （0为最热，1为最新）
     switch(order) {
       case '1': 
         order = 'agree';
@@ -49,29 +47,23 @@ class MomentMiddleware {
         order = 'm.updateTime'
     }
 
-    const result = await list(order, offset, limit)
+    const result = await list(label, order, offset, limit)
     ctx.body = result
   }
 
   // 修改动态
   async updateMoment(ctx, next) {
-    const { content, labels } = ctx.request.body
+    const { content, label } = ctx.request.body
     const momentId = ctx.params.momentId
-    if(!content || !labels) return ctx.app.emit('error', new Error(PARAMS_ERROR), ctx)
+    if(!content || !label) return ctx.app.emit('error', new Error(PARAMS_ERROR), ctx)
 
     try {
       // 修改内容
-      await update(momentId, content, labels)
-
-      // 删除所有对应的标签
-      await delLabel(momentId)
-
-      // 添加标签
-      await addLAbel(momentId, labels)
+      await update(momentId, label, content)
 
       ctx.body = "修改动态成功~"
     } catch (error) {
-      ctx.body = error
+      ctx.body = "修改动态失败，标签id不存在：" + error.message
     }
   }
 
