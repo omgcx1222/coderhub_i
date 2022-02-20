@@ -40,7 +40,7 @@ class MomentMiddleware {
 
     // （0为最热，1为最新）
     switch(order) {
-      case '1': 
+      case '0': 
         order = 'agree';
         break;
       default:

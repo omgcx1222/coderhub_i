@@ -36,7 +36,7 @@ const saveAvatarMulter = multer({
 const savePicturesMulter = multer({ 
   dest: PICTURE_PATH,
   limits: {
-    fileSize: 10240 * 1000,
+    fileSize: 20480 * 1000,
     files: 9
   },
   fileFilter: function (req, file, cb) {

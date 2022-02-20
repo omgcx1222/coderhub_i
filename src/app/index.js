@@ -17,7 +17,14 @@ app.use(bodyParser())
 app.use(async (ctx, next) =>{
   // 修改响应头
   ctx.response.set('Access-Control-Allow-Origin', '*');
-  await next()
+  ctx.response.set('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With , yourHeaderFeild');
+  ctx.response.set('Access-Control-Allow-Methods', 'PATCH, POST, GET, DELETE, OPTIONS');
+
+  if(ctx.request.method == 'OPTIONS') {
+    ctx.body = 200
+  }else {
+    await next()
+  }
 })
 
 fs.readdirSync(path.join(__dirname, '../router')).forEach(file =>{
