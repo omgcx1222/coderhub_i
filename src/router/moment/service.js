@@ -1,5 +1,6 @@
 const connection = require('../../app/database')
 const { APP_URL, APP_PORT } = require('../../app/config')
+const context = require('koa/lib/context')
 
 class MomentService {
   // 发表动态
@@ -47,8 +48,8 @@ class MomentService {
     }
   }
 
-  // 获取动态列表
-  async list(label, order, offset, limit) {
+  // 获取label获取动态列表
+  async listInLabel(label, order, offset, limit) {
     const statement = `
       SELECT m.id momentId, m.content content, m.createTime createTime, m.updateTime updateTime,
         JSON_OBJECT('id', u.id, 'nickname', u.nickname, 'avatarUrl', u.avatar_url) author,
@@ -62,13 +63,31 @@ class MomentService {
       ORDER BY ${order} DESC
       LIMIT ?, ?
     `
-    
     try {
       const result = await connection.execute(statement, [label, offset, limit])
       return result[0]
     } catch (error) {
       return error
     }
+  }
+
+  // 根据用户id获取动态列表
+  async listInUser(userId, offset, limit) {
+    const statement = `
+      SELECT m.id momentId, m.content content, m.createTime createTime, m.updateTime updateTime,
+        (SELECT JSON_ARRAYAGG(CONCAT('${APP_URL}:${APP_PORT}', '/moment/picture/', p.filename, '-y')) FROM picture p WHERE p.moment_id = m.id) images
+      FROM moment m
+      WHERE m.user_id = ?
+      ORDER BY m.createTime DESC
+      LIMIT ?, ?
+    `
+    try {
+      const [result] = await connection.execute(statement, [userId, offset, limit])
+      return result
+    } catch (error) {
+      context.body = error
+    }
+    
   }
 
   // 修改动态内容

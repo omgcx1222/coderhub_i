@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 
-const { insertMoment, detail, list, update, remove, picture } = require('./service')
+const { insertMoment, detail, listInLabel, listInUser, update, remove, picture } = require('./service')
 const { CONTENT, PARAMS_ERROR } = require('../../util/error-type')
 const { PICTURE_PATH } = require('../../util/file-path')
 const { agreeExist, agree, deleteAgree } = require('../../common/common-service')
@@ -36,19 +36,28 @@ class MomentMiddleware {
 
   // 获取动态列表
   async momentList(ctx, next) {
-    let { label, order='0', offset='0', limit='10' } = ctx.query
+    const { label } = ctx.query
+    if(label) { // 根据label获取动态列表
+      let { order='0', offset='0', limit='10' } = ctx.query
+      // （0为最热，1为最新）
+      switch(order) {
+        case '0': 
+          order = 'agree';
+          break;
+        default:
+          order = 'm.updateTime'
+      }
 
-    // （0为最热，1为最新）
-    switch(order) {
-      case '0': 
-        order = 'agree';
-        break;
-      default:
-        order = 'm.updateTime'
+      const result = await listInLabel(label, order, offset, limit)
+      ctx.body = result
+    }else { // 根据用户id获取动态列表
+      const { userId, offset='0', limit='10' } = ctx.query
+      if(!userId) return ctx.app.emit('error', new Error(PARAMS_ERROR), ctx)
+
+      const result = await listInUser(userId, offset, limit)
+      ctx.body = result
     }
-
-    const result = await list(label, order, offset, limit)
-    ctx.body = result
+    
   }
 
   // 修改动态

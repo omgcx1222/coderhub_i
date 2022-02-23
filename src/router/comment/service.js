@@ -31,8 +31,8 @@ class CommentService {
     }
   }
 
-  // 获取动态的评论列表
-  async list(momentId, order, offset, limit) {
+  // 根据动态获取动态的评论列表
+  async listInMoment(momentId, order, offset, limit) {
     const statement = `
       SELECT c.id, c.content, c.createTime, c.moment_id momentId, c.comment_id commentId,
         JSON_OBJECT('id', u.id, 'nickname', u.nickname, 'avatarUrl', u.avatar_url) user,
@@ -45,6 +45,23 @@ class CommentService {
     try {
       const [result] = await connection.execute(statement, [momentId, offset, limit])
       return result
+    } catch (error) {
+      return error.message
+    }
+  }
+
+  // 根据用户id获取评论列表
+  async listInUser(userId, offset, limit) {
+    const statement = `
+      SELECT c.id, c.content, c.createTime, c.moment_id momentId, c.comment_id commentId
+      FROM comment c
+      WHERE c.user_id = ?
+      ORDER BY c.createTime DESC
+      LIMIT ?, ?
+    `
+    try {
+      const [res] = await connection.execute(statement, [userId, offset, limit])
+      return res
     } catch (error) {
       return error.message
     }

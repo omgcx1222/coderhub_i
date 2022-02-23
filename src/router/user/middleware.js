@@ -68,6 +68,7 @@ class UserMiddleware {
     ctx.response.set('Content-Type', result.mimetype)
     ctx.body = fs.createReadStream(`${AVATAR_PATH}/${result[0].filename}`)
   }
+
 }
 
 module.exports = new UserMiddleware()

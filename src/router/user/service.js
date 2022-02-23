@@ -1,4 +1,5 @@
 const connection = require('../../app/database')
+const { APP_URL, APP_PORT } = require('../../app/config')
 
 class UserService {
   // 注册
@@ -19,6 +20,7 @@ class UserService {
     const [result] = await connection.execute(statement, [id])
     return result
   }
+
 }
 
 module.exports = new UserService()
