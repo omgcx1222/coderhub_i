@@ -1,15 +1,14 @@
-const context = require('koa/lib/context')
 const connection = require('../app/database')
 
 class CommonService {
   // 判断账号或昵称是否存在
-  async userExist(type, un) {
+  async userExist(type, id_or_name) {
     const statement = `SELECT * FROM users WHERE ${type} = ?`
     try {
-      const [result] = await connection.execute(statement, [un])
+      const [result] = await connection.execute(statement, [id_or_name])
       return result
     } catch (error) {
-      return ctx.body = error
+      return ctx.body = error.message
     }
   }
 
