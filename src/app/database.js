@@ -8,7 +8,9 @@ const connection  = mysql.createPool({
   database: config.MYSQL_DATABASE,
   user: config.MYSQL_USER,
   password: config.MYSQL_PASSWORD,
-  connectionLimit: config.MYSQL_CONNECTIONLIMIT
+  connectionLimit: config.MYSQL_CONNECTIONLIMIT,
+  // 2022-03-01T17:31:04.000Z
+  timezone: '+00:00'
 })
 
 connection.getConnection((err, conn) =>{

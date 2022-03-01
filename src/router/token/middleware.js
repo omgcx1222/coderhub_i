@@ -19,6 +19,7 @@ class Token {
 
     // 更新token
     const token = jwt.sign({ id, username }, PRIVATE_KEY, {
+      // expiresIn: 10,
       expiresIn: 60 * 60 * 24,
       algorithm: "RS256"
     })

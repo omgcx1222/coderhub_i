@@ -17,7 +17,7 @@ module.exports = {
   MYSQL_DATABASE,
   MYSQL_USER,
   MYSQL_PASSWORD,
-  MYSQL_CONNECTIONLIMIT,
+  MYSQL_CONNECTIONLIMIT
 } = process.env
 
 module.exports.PRIVATE_KEY = PRIVATE_KEY

@@ -39,10 +39,11 @@ class LoginMiddleware {
   async login(ctx, next) {
     // 获取用户信息
     const { id, username, nickname, avatar_url } = ctx.user
-
+    
     // 颁发token
     const token = jwt.sign({ id, username }, PRIVATE_KEY, {
       expiresIn: 60 * 60 * 24,
+      // expiresIn: 10,
       algorithm: "RS256"
     })
 

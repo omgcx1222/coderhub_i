@@ -1,4 +1,4 @@
-const { pub, reply, remove, listInMoment, listInUser } = require('./service')
+const { pub, reply, remove, listInMoment, listInUser, listInComment } = require('./service')
 const { PARAMS_ERROR } = require('../../util/error-type')
 const { agreeExist, agree, deleteAgree } = require('../../common/common-service')
 
@@ -41,12 +41,13 @@ class CommentMiddleware {
       let { order='0', offset='0', limit='10' } = ctx.query
       switch(order) {
         case '1': 
-          order = 'c.createTime'
+          order = 'agree'
           break;
         default:
-          order = 'agree'
+          order = 'c.createTime'
       }
       const result = await listInMoment(momentId, order, offset, limit)
+
       ctx.body = result
     }else {  // 根据用户id获取
       const { userId, offset='0', limit='10' } = ctx.query
@@ -55,6 +56,13 @@ class CommentMiddleware {
       const result = await listInUser(userId, offset, limit)
       ctx.body = result
     }
+  }
+
+  // 获取动态某个评论的回复列表
+  async commentDetailList(ctx, next) {
+    const { commentId } = ctx.params
+    const result = await listInComment(commentId)
+    ctx.body = result
   }
 
   // 点赞

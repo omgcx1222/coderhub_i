@@ -36,14 +36,33 @@ class CommentService {
     const statement = `
       SELECT c.id, c.content, c.createTime, c.moment_id momentId, c.comment_id commentId,
         JSON_OBJECT('id', u.id, 'nickname', u.nickname, 'avatarUrl', u.avatar_url) user,
-        (SELECT COUNT(*) FROM comment_agree cg WHERE cg.comment_id = c.id) agree
+        (SELECT COUNT(*) FROM comment_agree cg WHERE cg.comment_id = c.id) agree,
+        (SELECT COUNT(*) FROM comment c2 WHERE c2.comment_id = c.id) child_count
       FROM comment c LEFT JOIN users u ON c.user_id = u.id
-      WHERE moment_id = ?
+      WHERE c.moment_id = ? AND c.comment_id IS NULL
       ORDER BY ${order} DESC
       LIMIT ?, ?
     `
     try {
       const [result] = await connection.execute(statement, [momentId, offset, limit])
+      return result
+    } catch (error) {
+      return error.message
+    }
+  }
+
+  // 获取动态某个评论的回复列表
+  async listInComment(momentId) {
+    const statement = `
+      SELECT c.id, c.content, c.createTime, c.moment_id momentId, c.comment_id commentId,
+        JSON_OBJECT('id', u.id, 'nickname', u.nickname) user,
+        (SELECT COUNT(*) FROM comment_agree cg WHERE cg.comment_id = c.id) agree
+      FROM comment c LEFT JOIN users u ON c.user_id = u.id
+      WHERE c.moment_id = 18 AND c.comment_id = 6
+      ORDER BY c.createTime ASC
+    `
+    try {
+      const [result] = await connection.execute(statement, [momentId])
       return result
     } catch (error) {
       return error.message
