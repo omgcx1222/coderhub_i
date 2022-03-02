@@ -34,7 +34,7 @@ const errorHandle = (err, ctx) => {
 
     case errorType.TOKEN_NOT_OK: 
       ctx.status = 401
-      ctx.body = "token无效"
+      ctx.body = "未登录"
       break;
 
     case errorType.CONTENT: 
