@@ -36,6 +36,7 @@ class CommentMiddleware {
 
   // 获取动态的评论列表
   async commentList(ctx, next) {
+    const { id } = ctx.user
     const { momentId } = ctx.query
     if(momentId) {  // 根据动态获取
       let { order='0', offset='0', limit='10' } = ctx.query
@@ -46,7 +47,7 @@ class CommentMiddleware {
         default:
           order = 'c.createTime'
       }
-      const result = await listInMoment(momentId, order, offset, limit)
+      const result = await listInMoment(id, momentId, order, offset, limit)
 
       ctx.body = result
     }else {  // 根据用户id获取
@@ -60,8 +61,9 @@ class CommentMiddleware {
 
   // 获取动态某个评论的回复列表
   async commentDetailList(ctx, next) {
+    const { id } = ctx.user
     const { commentId } = ctx.params
-    const result = await listInComment(commentId)
+    const result = await listInComment(id, commentId)
     ctx.body = result
   }
 

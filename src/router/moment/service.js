@@ -49,13 +49,14 @@ class MomentService {
   }
 
   // 获取label获取动态列表
-  async listInLabel(label, order, offset, limit) {
+  async listInLabel(id, label, order, offset, limit) {
     const statement = `
       SELECT m.id momentId, m.content content, m.createTime createTime, m.updateTime updateTime,
         JSON_OBJECT('id', u.id, 'nickname', u.nickname, 'avatarUrl', u.avatar_url) author,
         (SELECT JSON_ARRAYAGG(CONCAT('${APP_URL}:${APP_PORT}', '/moment/picture/', p.filename, '-y')) FROM picture p WHERE p.moment_id = m.id) images,
         (SELECT COUNT(*) FROM comment c WHERE m.id = c.moment_id) commentCount,
         (SELECT COUNT(*) FROM moment_agree mg WHERE mg.moment_id = m.id) agree,
+        (SELECT COUNT(*) FROM moment_agree mg WHERE mg.moment_id = m.id AND mg.user_id = ?) isAgree,
         (SELECT JSON_OBJECT('id', l.id, 'name', l.name) FROM label l WHERE l.id = m.label_id) label
       FROM moment m LEFT JOIN users u
       ON m.user_id = u.id
@@ -64,7 +65,7 @@ class MomentService {
       LIMIT ?, ?
     `
     try {
-      const result = await connection.execute(statement, [label, offset, limit])
+      const result = await connection.execute(statement, [id, label, offset, limit])
       return result[0]
     } catch (error) {
       return error

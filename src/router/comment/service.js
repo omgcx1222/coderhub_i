@@ -32,11 +32,12 @@ class CommentService {
   }
 
   // 根据动态获取动态的评论列表
-  async listInMoment(momentId, order, offset, limit) {
+  async listInMoment(userId, momentId, order, offset, limit) {
     const statement = `
       SELECT c.id, c.content, c.createTime, c.moment_id momentId, c.comment_id commentId,
         JSON_OBJECT('id', u.id, 'nickname', u.nickname, 'avatarUrl', u.avatar_url) user,
         (SELECT COUNT(*) FROM comment_agree cg WHERE cg.comment_id = c.id) agree,
+        (SELECT COUNT(*) FROM comment_agree cg WHERE cg.comment_id = c.id AND cg.user_id = ?) isAgree,
         (SELECT COUNT(*) FROM comment c2 WHERE c2.comment_id = c.id) child_count
       FROM comment c LEFT JOIN users u ON c.user_id = u.id
       WHERE c.moment_id = ? AND c.comment_id IS NULL
@@ -44,7 +45,7 @@ class CommentService {
       LIMIT ?, ?
     `
     try {
-      const [result] = await connection.execute(statement, [momentId, offset, limit])
+      const [result] = await connection.execute(statement, [userId, momentId, offset, limit])
       return result
     } catch (error) {
       return error.message
@@ -52,17 +53,18 @@ class CommentService {
   }
 
   // 获取动态某个评论的回复列表
-  async listInComment(momentId) {
+  async listInComment(userId, commentId) {
     const statement = `
       SELECT c.id, c.content, c.createTime, c.moment_id momentId, c.comment_id commentId,
-        JSON_OBJECT('id', u.id, 'nickname', u.nickname) user,
-        (SELECT COUNT(*) FROM comment_agree cg WHERE cg.comment_id = c.id) agree
+        JSON_OBJECT('id', u.id, 'nickname', u.nickname, 'avatarUrl', u.avatar_url) user,
+        (SELECT COUNT(*) FROM comment_agree cg WHERE cg.comment_id = c.id) agree,
+        (SELECT COUNT(*) FROM comment_agree cg WHERE cg.comment_id = c.id AND cg.user_id = ?) isAgree
       FROM comment c LEFT JOIN users u ON c.user_id = u.id
-      WHERE c.moment_id = 18 AND c.comment_id = 6
+      WHERE c.comment_id = ?
       ORDER BY c.createTime ASC
     `
     try {
-      const [result] = await connection.execute(statement, [momentId])
+      const [result] = await connection.execute(statement, [userId, commentId])
       return result
     } catch (error) {
       return error.message

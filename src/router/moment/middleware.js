@@ -36,6 +36,7 @@ class MomentMiddleware {
 
   // 获取动态列表
   async momentList(ctx, next) {
+    const { id } = ctx.user
     const { label } = ctx.query
     if(label) { // 根据label获取动态列表
       let { order='0', offset='0', limit='10' } = ctx.query
@@ -48,7 +49,7 @@ class MomentMiddleware {
           order = 'm.updateTime'
       }
 
-      const result = await listInLabel(label, order, offset, limit)
+      const result = await listInLabel(id, label, order, offset, limit)
       ctx.body = result
     }else { // 根据用户id获取动态列表
       const { userId, offset='0', limit='10' } = ctx.query
