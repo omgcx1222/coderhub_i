@@ -10,7 +10,7 @@ const {
   updateAvatar,
   createAvatar,
   updateAvatarUrl,
-  remove,
+  // remove,
   uploadPictures
 } = require('./service')
 const { AVATAR_PATH, PICTURE_PATH } = require('../../util/file-path')
@@ -37,7 +37,7 @@ const savePicturesMulter = multer({
   dest: PICTURE_PATH,
   limits: {
     fileSize: 20480 * 1000,
-    files: 9
+    files: 1
   },
   fileFilter: function (req, file, cb) {
     if(!file.mimetype.indexOf('image')) {
@@ -50,19 +50,43 @@ const savePicturesMulter = multer({
 
 
 class UploadMiddleware {
-  // 保存头像到服务器(单个文件)
-  async saveAvatar(ctx, next) {
-    await saveAvatarMulter.single('avatar')(ctx, next).catch(err =>{
-      ctx.body = err.message
-    })
+  // 保存单个文件到服务器
+  saveImg(name) {
+    return async (ctx, next) =>{
+      if(name === 'avatar') {
+        // 保存头像
+        await saveAvatarMulter.single(name)(ctx, next).catch(err =>{
+          ctx.body = err.message
+        })
+      }else {
+        const { momentId } = ctx.params
+        const list = await getInfo('picture', 'moment_id', momentId)
+        
+        if(list.length >= 9) {
+          return ctx.body = "配图不能超过9个！"
+        }
+
+        // 保存配图
+        await savePicturesMulter.single(name)(ctx, next).catch(err =>{
+          ctx.body = err.message
+        })
+      }
+    }
   }
 
-  // 保存配图到服务器(多个文件)
-  async savePictures(ctx, next) {
-    await savePicturesMulter.array('picture')(ctx, next).catch(err =>{
-      ctx.body = err.message
-    })
-  }
+  // 保存配图到服务器(单个文件)
+  // async saveAvatar(ctx, next) {
+  //   await saveAvatarMulter.single('avatar')(ctx, next).catch(err =>{
+  //     ctx.body = err.message
+  //   })
+  // }
+
+  // // 保存配图到服务器(多个文件)
+  // async savePictures(ctx, next) {
+  //   await savePicturesMulter.array('picture')(ctx, next).catch(err =>{
+  //     ctx.body = err.message
+  //   })
+  // }
 
   // 压缩单个图片
   async resizeFile(ctx, next) {
@@ -75,14 +99,14 @@ class UploadMiddleware {
   }
 
   // 压缩多个图片
-  async resizeFiles(ctx, next) {
-    for(let file of ctx.req.files) {
-      jimp.read(file.path).then(res =>{
-        res.resize(300, jimp.AUTO).write(`${file.path}-y`)
-      })
-    }
-    await next()
-  }
+  // async resizeFiles(ctx, next) {
+  //   for(let file of ctx.req.files) {
+  //     jimp.read(file.path).then(res =>{
+  //       res.resize(300, jimp.AUTO).write(`${file.path}-y`)
+  //     })
+  //   }
+  //   await next()
+  // }
 
   // 处理头像信息
   async handleAvatar(ctx, next) {
@@ -120,34 +144,37 @@ class UploadMiddleware {
   async handlePictures(ctx, next) {
     const { id } = ctx.user
 
-    // if(!ctx.req.files || !ctx.params) return ctx.app.emit('error', new Error(PARAMS_ERROR), ctx)
-    const files = ctx.req.files
+    // const files = ctx.req.files
     const { momentId } = ctx.params
 
     try {
       // 获取原配图信息
-      const result = await getInfo("picture", "moment_id", momentId)
+      // const result = await getInfo("picture", "moment_id", momentId)
 
-      if(result.length) {
-        // 数据库清除所有原动态配图信息
-        await remove(momentId)
+      // if(result.length) {
+      //   // 数据库清除所有原动态配图信息
+      //   await remove(momentId)
 
-        // 服务器删除原配图
-        for(let file of result) {
-          fs.unlink(path.join(PICTURE_PATH, `/${file.filename}`), error => {
-            if(error) console.log("配图删除失败", error);
-          })
-          fs.unlink(path.join(PICTURE_PATH, `/${file.filename}-y`), error => {
-            if(error) console.log("-y配图删除失败", error);
-          })
-        }
-      }
+      //   // 服务器删除原配图
+      //   for(let file of result) {
+      //     fs.unlink(path.join(PICTURE_PATH, `/${file.filename}`), error => {
+      //       if(error) console.log("配图删除失败", error);
+      //     })
+      //     fs.unlink(path.join(PICTURE_PATH, `/${file.filename}-y`), error => {
+      //       if(error) console.log("-y配图删除失败", error);
+      //     })
+      //   }
+      // }
       
       // 上传新配图信息
-      for(let file of files) {
-        const { filename, mimetype, size } = file
-        await uploadPictures(id, filename, mimetype, size, momentId)
-      }
+      // for(let file of files) {
+      //   const { filename, mimetype, size } = file
+      //   await uploadPictures(id, filename, mimetype, size, momentId)
+      // }
+
+      const { filename, mimetype, size } = ctx.req.file
+      // console.log(ctx.req.file);
+      await uploadPictures(id, filename, mimetype, size, momentId)
 
       ctx.body = "上传配图成功~"
     } catch (error) {

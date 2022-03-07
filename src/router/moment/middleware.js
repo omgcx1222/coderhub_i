@@ -20,8 +20,8 @@ class MomentMiddleware {
     }
 
     try {
-      await insertMoment(id, content, label)
-      ctx.body = "发表动态成功~"
+      const result = await insertMoment(id, content, label)
+      ctx.body = { message: '发表动态成功', id: result.insertId }
     } catch (error) {
       ctx.body = "发表动态失败，标签id不存在：" + error.message
     }

@@ -76,12 +76,12 @@ class CommentMiddleware {
   }
 
   // 获取动态某个评论的回复列表
-  async commentDetailList(ctx, next) {
-    const { id } = ctx.user
-    const { commentId } = ctx.params
-    const result = await listInComment(id, commentId)
-    ctx.body = result
-  }
+  // async commentDetailList(ctx, next) {
+  //   const { id } = ctx.user
+  //   const { commentId } = ctx.params
+  //   const result = await listInComment(id, commentId)
+  //   ctx.body = result
+  // }
 
   // 点赞
   async goAgree(ctx, next) {

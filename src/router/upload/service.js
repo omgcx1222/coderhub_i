@@ -4,8 +4,12 @@ class UploadService {
   // 查询
   async getInfo(type, typeId, id) {
     const statement = `SELECT * FROM ${type} WHERE ${typeId} = ?`
-    const [result] = await connection.execute(statement, [id])
-    return result
+    try {
+      const [result] = await connection.execute(statement, [id])
+      return result
+    } catch (error) {
+      return ctx.body = error.message
+    }
   }
   
   // 更新用户头像信息
@@ -30,11 +34,11 @@ class UploadService {
   }
 
   // 清除
-  async remove(id) {
-    const statement = `DELETE FROM picture WHERE moment_id = ?`
-    const [result] = await connection.execute(statement, [id])
-    return result
-  }
+  // async remove(id) {
+  //   const statement = `DELETE FROM picture WHERE moment_id = ?`
+  //   const [result] = await connection.execute(statement, [id])
+  //   return result
+  // }
 
   // 上传配图信息
   async uploadPictures(userId, filename, mimetype, size, momentId) {
