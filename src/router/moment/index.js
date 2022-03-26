@@ -1,6 +1,6 @@
 const Router = require('koa-router')
 
-const { verifyToken, verifyPermission, verifyAgree } = require('../../common/common-middleware')
+const { verifyToken, verifyPermission } = require('../../common/common-middleware')
 const { 
   createMoment, 
   momentDetail, 

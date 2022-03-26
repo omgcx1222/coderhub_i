@@ -1,6 +1,5 @@
 const connection = require('../../app/database')
 const { APP_URL, APP_PORT } = require('../../app/config')
-const context = require('koa/lib/context')
 
 class MomentService {
   // 发表动态

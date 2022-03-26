@@ -91,9 +91,13 @@ class UploadMiddleware {
   // 压缩单个图片
   async resizeFile(ctx, next) {
     const file = ctx.req.file
+    const { momentId } = ctx.params
     jimp.read(file.path).then(res =>{
-      // 直接覆盖
-      res.resize(300, 300).write(`${file.path}`)
+      if(momentId) {
+        res.resize(300, jimp.AUTO).write(`${file.path}-y`)
+      }else {
+        res.resize(300, 300).write(`${file.path}`)
+      }
     })
     await next()
   }
@@ -134,7 +138,7 @@ class UploadMiddleware {
 
       // 更新用户信息的头像地址
       await updateAvatarUrl(`${APP_URL}:${APP_PORT}/user/${id}/avatar`, id)
-      ctx.body = "上传头像成功~"
+      ctx.body = { data: "上传头像成功", url: `${APP_URL}:${APP_PORT}/user/${id}/avatar` }
     } catch (error) {
       ctx.body = error
     }
