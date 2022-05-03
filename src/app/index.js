@@ -1,15 +1,14 @@
 const Koa = require('koa')
 const bodyParser = require('koa-bodyparser') // 解析json
+const websocket = require('koa-websocket')
 
 const fs = require('fs')
 const path = require('path')
 
-// const userRouter = require('../router/user')
-// const loginRouter = require('../router/login')
-
 const errorHandle = require('../util/error-handle')
 
-const app = new Koa()
+// const app = new Koa()
+const app = websocket(new Koa())
 
 app.use(bodyParser())
 
@@ -27,17 +26,19 @@ app.use(async (ctx, next) =>{
   }
 })
 
+// 导入路由
 fs.readdirSync(path.join(__dirname, '../router')).forEach(file =>{
+  if(file === 'socket') return;
   const router = require(`../router/${file}`)
   app.use(router.routes())
   // app.use(router.allowedMethods())
 })
 
-// app.use(userRouter.routes())
-// // app.use(userRouter.allowedMethods())
+// 导入socket路由
+const socketRouter = require('../router/socket')
+app.ws.use(socketRouter.routes())
 
-// app.use(loginRouter.routes())
-
+// 处理响应错误信息
 app.on('error', errorHandle)
 
 module.exports = app

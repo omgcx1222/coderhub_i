@@ -15,9 +15,9 @@ class GoodsService {
     if(id) {
       const statement = `
         SELECT g.id, g.title, g.detail, g.price,
-        (SELECT if(COUNT(ug.count), ug.count, 0) FROM users_goods ug WHERE ug.user_id = ? AND ug.goods_id = g.id) count,
+        (SELECT ug.count FROM users_goods ug WHERE ug.user_id = ? AND ug.goods_id = g.id) count,
         (SELECT JSON_ARRAYAGG(CONCAT('${APP_URL}:${APP_PORT}', '/goods/', i.file_name)) swiper FROM goods_img i WHERE i.goods_id = g.id) img
-        FROM goods g 
+        FROM goods g
       `
       try {
         const [result] = await connection.execute(statement, [id])
