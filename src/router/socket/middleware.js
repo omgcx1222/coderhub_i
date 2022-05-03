@@ -3,7 +3,9 @@ const jwt = require('jsonwebtoken')
 const { PUBLIC_KEY } = require('../../app/config')
 const { createChatRecord, selectChatRecord } = require('./serviec')
 
+// 存储所有在线用户的ctx
 let list = []
+
 // 给所有人发送
 function allSend(onLineCount, data) {
   // console.log(onLineCount, data);
@@ -64,9 +66,8 @@ class SocketMiddleware {
         if(!currentUser.id) return;
         const index = list.findIndex(item => item.userInfo.id == currentUser.id)
         if(index == -1) return;
-
+        allSend(list.length - 1, currentUser.id + '退出')
         list.splice(index, 1)
-        allSend(list.length, currentUser.id + '退出')
       })
     } catch (error) {
       ctx.body = error.message

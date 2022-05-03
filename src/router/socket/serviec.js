@@ -1,39 +1,6 @@
 const connection = require('../../app/database')
 
 class SocketService {
-  // 查询在线人数
-  async onLineUsers() {
-    const statement = "SELECT * FROM on_line_users "
-    try {
-      const [result] = await connection.execute(statement)
-      return result
-    } catch (error) {
-      return error.message
-    }
-  }
-
-  // 新建在线用户
-  async createUser(id) {
-    const statement = "INSERT INTO on_line_users (user_id) VALUES (?)"
-    try {
-      const [result] = await connection.execute(statement, [id])
-      return result
-    } catch (error) {
-      return error.message
-    }
-  }
-  
-  // 用户退出
-  async deleteUser(id) {
-    const statement = "DELETE FROM on_line_users WHERE user_id = (?)"
-    try {
-      const [result] = await connection.execute(statement, [id])
-      return result
-    } catch (error) {
-      return error.message
-    }
-  }
-
   // 创建记录
   async createChatRecord(id, content) {
     const statement = "INSERT INTO chat_record (user_id, content) VALUES (?, ?)"
