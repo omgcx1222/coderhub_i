@@ -1,10 +1,9 @@
-#### 接口文档自行查看 src/router/xxx/index.js 文件
+#### 接口文档自行查看 src/router/xxx/ 目录下的文件及其源码
 
 
 
 #### 在src同级目录下创建 .env 文件
 ###### .env文件的内容为：
-
     APP_PORT = 80   端口
     APP_URL = http://xxxx  项目的访问地址
 
