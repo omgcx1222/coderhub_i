@@ -1,5 +1,5 @@
 const connection = require('../../app/database')
-// const { APP_URL, APP_PORT } = require('../../app/config')
+const { APP_URL, APP_PORT } = require('../../app/config')
 
 class GoodsService {
   // 轮播图
