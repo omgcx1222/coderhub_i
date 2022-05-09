@@ -1,9 +1,9 @@
-## 接口文档自行查看 src/router/xxx/index.js 文件
+#### 接口文档自行查看 src/router/xxx/index.js 文件
 
 
 
-## 在src同级目录下创建 .env 文件
-### .env文件的内容为：
+#### 在src同级目录下创建 .env 文件
+###### .env文件的内容为：
 
     APP_PORT = 80   端口
     APP_URL = http://xxxx  项目的访问地址
@@ -16,4 +16,4 @@
     MYSQL_CONNECTIONLIMIT = 10   连接池数量
 
 
-## src同级目录下的 coderhub.sql 文件，是本项目所需的数据库
+#### src同级目录下的 coderhub.sql 文件，是本项目所需的数据库
