@@ -16,3 +16,11 @@
 
 
 #### src同级目录下的 coderhub.sql 文件，是本项目所需的数据库
+
+
+#### 运行
+确保有node环境，src目录下运行
+    node src/main.js
+也也可以运行脚本
+    npm start
+
