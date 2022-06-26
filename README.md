@@ -1,8 +1,8 @@
-#### 接口文档自行查看 src/router/xxx/ 目录下的文件及其源码
+#### 1.接口文档自行查看 src/router/xxx/ 目录下的文件及其源码
 
 
 
-#### 在src同级目录下创建 .env 文件
+#### 2.在src同级目录下创建 .env 文件
 ###### .env文件的内容为：
     APP_PORT = 80   端口
     APP_URL = http://xxxx  项目的访问地址
@@ -18,9 +18,13 @@
 #### src同级目录下的 coderhub.sql 文件，是本项目所需的数据库
 
 
-#### 运行
+#### 3.运行
 确保有node环境，src目录下运行
-    node src/main.js
-也也可以运行脚本
-    npm start
+```
+node src/main.js
+````
+也可以运行脚本
+````
+npm start
+````
 
